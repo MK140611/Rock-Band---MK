@@ -28,12 +28,12 @@
 
   <h4>Albums</h4>
   <ul>
-    {% for album in band.albums %}
+    {% for collab in band.collabs %}
     <li>
-      <strong>{{ album.AlbumTitle }}</strong> ({{ album.ReleaseYear }})<br>
+      <strong>{{ collab.albums.AlbumTitle }}</strong> ({{ collab.albums.ReleaseYear }})<br>
       <em>Collaborators:</em>
       {% set collaborators = [] %}
-      {% for collaborator in album.bands %}
+      {% for collaborator in collab.albums.bands %}
         {% if collaborator.BandID != band.BandID %}
           {% set _ = collaborators.append(collaborator.BandName) %}
         {% endif %}

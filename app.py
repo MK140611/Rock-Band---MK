@@ -63,6 +63,10 @@ class Albums(db.Model):
     ReleaseYear = db.Column(db.Integer)
     collabs = db.relationship('Collabs', backref='albums', lazy=True)
 
+    @property
+    def bands(self):
+        return[collab.band for collab in self.collabs]
+
 
 # ==========================
 # ROUTES
@@ -115,6 +119,12 @@ def add_album():
         )
 
         db.session.add(new_album)
+        db.session.commit()
+
+        selected_band_ids = request.form.getlist('bandid')
+        for band_id in selected_band_ids:
+            collab = Collabs(BandID=band_id, AlbumID=new_album.AlbumID)
+            db.session.add(collab)
         db.session.commit()
 
         return redirect(url_for('index'))
@@ -190,3 +200,30 @@ with app.app_context():
 if __name__ == '__main__':
     app.run(debug=True)
 
+
+
+
+@app.route('/collab/add', methods=['GET', 'POST'])
+def add_collabs():
+    bands = Bands.query.all()
+    albums = Albums.query.all()
+    if request.method == 'POST':
+        collabs = Collabs(
+            BandID=request.form.get('bandid'),
+            CollabID=request.form.get('collabid'),
+            AlbumID=request.form.get('albumid')
+        )
+        db.session.add(collabs)
+        db.session.commit()
+        flash('collabs assigned', 'success')
+        return redirect(url_for('view_by_band'))
+    return render_template('add_collabs.html', bands=bands, albums=albums)
+
+
+@app.route('/collabs/delete/<int:id>')
+def delete_collab(id):
+    collab = Collabs.query.get_or_404(id)
+    db.session.delete(collab)
+    db.session.commit()
+    flash('Collaberation removed', 'success')
+    return redirect(url_for('view_by_band'))
